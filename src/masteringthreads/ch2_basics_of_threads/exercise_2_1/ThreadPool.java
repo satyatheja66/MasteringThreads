@@ -3,6 +3,7 @@ package masteringthreads.ch2_basics_of_threads.exercise_2_1;
 import net.jcip.annotations.*;
 
 import java.util.*;
+import java.util.concurrent.locks.*;
 
 public class ThreadPool {
     private static final Object nextGroupNumberMonitor = new Object();
@@ -18,8 +19,9 @@ public class ThreadPool {
 
     // Create a thread group field
     private final ThreadGroup group = new ThreadGroup("thread-pool-group-" + groupNumber);
-    // Create a LinkedList field containing Runnable
-    @GuardedBy("jobs")
+    private final Lock lock = new ReentrantLock();
+    private final Condition jobsNotEmpty = lock.newCondition();
+    @GuardedBy("lock")
     private final List<Runnable> jobs = new LinkedList<>();
 
     public ThreadPool(int poolSize) {
@@ -31,23 +33,32 @@ public class ThreadPool {
     }
 
     private Runnable take() throws InterruptedException {
-        synchronized (jobs) {
-            // if the LinkedList is empty, we wait
-            while (jobs.isEmpty()) jobs.wait();
+        // if the LinkedList is empty, we wait
+        lock.lock();
+        try {
+            while (jobs.isEmpty()) jobsNotEmpty.await();
             return jobs.remove(0);
+        } finally {
+            lock.unlock();
         }
     }
 
     public void submit(Runnable job) {
-        synchronized (jobs) {
+        lock.lock();
+        try {
             jobs.add(job);
-            jobs.notifyAll();
+            jobsNotEmpty.signalAll();
+        } finally {
+            lock.unlock();
         }
     }
 
     public int getRunQueueLength() {
-        synchronized (jobs) {
+        lock.lock();
+        try {
             return jobs.size();
+        } finally {
+            lock.unlock();
         }
     }
 
@@ -62,7 +73,7 @@ public class ThreadPool {
         }
 
         public void run() {
-            while(true) {
+            while (true) {
                 try {
                     Runnable task = take();
                     task.run();
