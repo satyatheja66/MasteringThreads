@@ -20,8 +20,7 @@ public class ThreadPool {
     private final ThreadGroup group = new ThreadGroup("thread-pool-group-" + groupNumber);
     // Create a LinkedList field containing Runnable
     @GuardedBy("jobs")
-    private final LinkedList<Runnable> jobs = new LinkedList<>();
-    // Hint: Since LinkedList is not thread-safe, we need to synchronize it
+    private final List<Runnable> jobs = new LinkedList<>();
 
     public ThreadPool(int poolSize) {
         // create several Worker threads in the thread group
@@ -32,25 +31,29 @@ public class ThreadPool {
     }
 
     private Runnable take() throws InterruptedException {
-        // if the LinkedList is empty, we wait
-        //
-        // remove the first job from the LinkedList and return it
-        throw new UnsupportedOperationException("not implemented");
+        synchronized (jobs) {
+            // if the LinkedList is empty, we wait
+            while (jobs.isEmpty()) jobs.wait();
+            return jobs.remove(0);
+        }
     }
 
     public void submit(Runnable job) {
-        // Add the job to the LinkedList and notifyAll
+        synchronized (jobs) {
+            jobs.add(job);
+            jobs.notifyAll();
+        }
     }
 
     public int getRunQueueLength() {
-        // return the length of the LinkedList
-        // remember to also synchronize!
-        throw new UnsupportedOperationException("not implemented");
+        synchronized (jobs) {
+            return jobs.size();
+        }
     }
 
     @SuppressWarnings("deprecation")
     public void shutdown() {
-        // this should call stop() on the ThreadGroup.
+        group.stop();
     }
 
     private class Worker extends Thread {
@@ -59,9 +62,14 @@ public class ThreadPool {
         }
 
         public void run() {
-            // we run in an infinite loop:
-            // remove the next job from the linked list using take()
-            // we then call the run() method on the job
+            while(true) {
+                try {
+                    Runnable task = take();
+                    task.run();
+                } catch (InterruptedException e) {
+                    //e.printStackTrace();
+                }
+            }
         }
     }
 }
