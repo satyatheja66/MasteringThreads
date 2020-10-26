@@ -5,7 +5,7 @@ import java.util.concurrent.*;
 
 public class ExceptionKillingThread {
     // not correct, but seems to work
-    private static Queue<Integer> queue = new ConcurrentLinkedQueue<>();
+    private volatile static Queue<Integer> queue = new ConcurrentLinkedQueue<>();
 
     public static void main(String... args) throws InterruptedException {
         Runnable job = () -> {
