@@ -20,8 +20,7 @@ public class ThreadCreationCost {
 
         long count = 0;
         while(running) {
-            Thread thread = new Thread(task);
-            thread.start();
+            Thread thread = Thread.startVirtualThread(task);
             thread.join();
 //            object = new byte[500 * 1024];
             count++;
