@@ -3,19 +3,12 @@ package masteringthreads.ch2_basics_of_threads.exercise_2_1;
 import net.jcip.annotations.*;
 
 import java.util.*;
+import java.util.concurrent.atomic.*;
 import java.util.concurrent.locks.*;
 
 public class ThreadPool {
-    private static final Object nextGroupNumberMonitor = new Object();
-    @GuardedBy("nextGroupNumberMonitor")
-    private static int nextGroupNumber = 1;
-    private final int groupNumber;
-
-    {
-        synchronized (nextGroupNumberMonitor) {
-            groupNumber = nextGroupNumber++;
-        }
-    }
+    private static final AtomicInteger nextGroupNumber = new AtomicInteger();
+    private final int groupNumber = nextGroupNumber.incrementAndGet();
 
     // Create a thread group field
     private final ThreadGroup group = new ThreadGroup("thread-pool-group-" + groupNumber);
