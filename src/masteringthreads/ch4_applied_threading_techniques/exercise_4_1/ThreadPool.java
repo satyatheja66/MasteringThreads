@@ -1,12 +1,10 @@
 package masteringthreads.ch4_applied_threading_techniques.exercise_4_1;
 
-import java.util.*;
-import java.util.concurrent.locks.*;
+import java.util.concurrent.*;
 
-// TODO: Replace List with LinkedBlockingQueue
 public class ThreadPool {
     private final ThreadGroup group = new ThreadGroup("ThreadPoolGroup");
-    private final List<Runnable> tasks = new LinkedList<>();
+    private final BlockingQueue<Runnable> tasks = new LinkedBlockingQueue<>();
     private boolean running = true;
 
     public ThreadPool(int poolSize) {
@@ -17,23 +15,18 @@ public class ThreadPool {
     }
 
     private Runnable take() throws InterruptedException {
-        synchronized (tasks) {
-            while (tasks.isEmpty()) tasks.wait();
-            return tasks.remove(0);
-        }
+        return tasks.take();
     }
 
     public void submit(Runnable job) {
-        synchronized (tasks) {
-            tasks.add(job);
-            tasks.notifyAll();
-        }
+        tasks.add(job);
+//        boolean offer = tasks.offer(job); // if you have offer, check return value
+//        if (!offer) throw new RejectedExecutionException("Job " + job + " rejected");
+//        tasks.put(job); // throws InterruptedException and blocks caller
     }
 
     public int getRunQueueLength() {
-        synchronized (tasks) {
-            return tasks.size();
-        }
+        return tasks.size();
     }
 
     public void shutdown() {
