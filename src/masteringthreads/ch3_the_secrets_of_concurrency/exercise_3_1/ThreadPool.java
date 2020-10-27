@@ -6,6 +6,7 @@ import java.util.concurrent.locks.*;
 public class ThreadPool {
     private final ThreadGroup group = new ThreadGroup("ThreadPoolGroup");
     private final List<Runnable> tasks = new LinkedList<>();
+    private volatile boolean running = true;
 
     public ThreadPool(int poolSize) {
         for (int i = 0; i < poolSize; i++) {
@@ -36,7 +37,8 @@ public class ThreadPool {
 
     @SuppressWarnings("deprecation")
     public void shutdown() {
-        group.stop();
+        running = false;
+        group.interrupt();
     }
 
     private class Worker extends Thread {
@@ -45,11 +47,11 @@ public class ThreadPool {
         }
 
         public void run() {
-            while(true) {
+            while(running) {
                 try {
                     take().run();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
+                } catch (InterruptedException consumeAndExit) {
+                    break;
                 }
             }
         }
