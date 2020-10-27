@@ -27,7 +27,7 @@ public class ExecutorExamples {
         ExecutorService scheduled = new ScheduledThreadPoolExecutor(10);
 
         ExecutorService sortOfSingle = Executors.newFixedThreadPool(1);
-        ((ThreadPoolExecutor)sortOfSingle).setCorePoolSize(2);
+        ((ThreadPoolExecutor) sortOfSingle).setCorePoolSize(2);
 
         ExecutorService single = Executors.newSingleThreadExecutor(); // cannot inline
         ExecutorService singleScheduled = Executors.newSingleThreadScheduledExecutor(); // cannot inline

@@ -8,7 +8,7 @@ public class ExceptionKillingThread {
 
     public static void main(String... args) throws InterruptedException {
         Runnable job = () -> {
-            while(queue.isEmpty());
+            while (queue.isEmpty()) ;
             System.out.println("queue is not empty");
         };
         Thread thread = new Thread(job);

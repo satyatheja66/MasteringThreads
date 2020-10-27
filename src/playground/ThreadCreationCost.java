@@ -5,6 +5,7 @@ import java.util.*;
 public class ThreadCreationCost {
     private static volatile boolean running = true;
     private static Object object;
+
     public static void main(String... args) throws InterruptedException {
         Timer timer = new Timer(true);
         timer.schedule(new TimerTask() {
@@ -19,7 +20,7 @@ public class ThreadCreationCost {
         };
 
         long count = 0;
-        while(running) {
+        while (running) {
             Thread thread = new Thread(task);
             thread.start();
             thread.join();
