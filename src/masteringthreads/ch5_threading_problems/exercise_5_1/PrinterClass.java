@@ -4,24 +4,30 @@ public class PrinterClass {
     private static final boolean OUTPUT_TO_SCREEN = false;
     private boolean printingEnabled = OUTPUT_TO_SCREEN;
 
-    private synchronized static void print(PrinterClass pc, String s) {
-        if (pc.isPrintingEnabled()) {
-            System.out.println("Printing: " + s);
+    private static void print(PrinterClass pc, String s) {
+        synchronized (PrinterClass.class) {
+            if (pc.isPrintingEnabled()) {
+                System.out.println("Printing: " + s);
+            }
         }
     }
 
-    public void print(String s) {
+    public void print(String s) { // class, this
         print(this, s);
     }
 
-    public synchronized boolean isPrintingEnabled() {
-        return printingEnabled;
+    public boolean isPrintingEnabled() {
+        synchronized (this) {
+            return printingEnabled;
+        }
     }
 
-    public synchronized void setPrintingEnabled(boolean printingEnabled) {
-        if (!printingEnabled) {
-            print(this, "Printing turned off!");
+    public void setPrintingEnabled(boolean printingEnabled) { // this, class, this
+        synchronized (this) {
+            if (!printingEnabled) {
+                print(this, "Printing turned off!");
+            }
+            this.printingEnabled = printingEnabled;
         }
-        this.printingEnabled = printingEnabled;
     }
 }
